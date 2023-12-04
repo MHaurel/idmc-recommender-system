@@ -4,4 +4,6 @@
 
 create a conda env : `conda create -n rs`
 
+activate the env : `conda activate rs`
+
 run `pip install -r requirements.txt`
