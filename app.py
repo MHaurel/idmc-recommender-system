@@ -1,41 +1,59 @@
 import streamlit as st
 import pandas as pd
+import random
 
 from utils import get_recommendation_ib, get_recommendation_ub
 
+# Loading the base data
+ratings = pd.read_csv("data/ratings.csv").dropna()
+unique_users = [f"Utilisateur n°{int(x)}" for x in ratings.User_ID.unique()]
 
-@st.cache_data
-def load_data(path):
-    df = pd.read_csv(path)
-    return df
-
-
-df = load_data("data/ratings.csv")
-df_matrix = load_data("data/ratings_matrix.csv")
-st.dataframe(df_matrix)
-
-max_user = int(df.User_ID.max())
+food = pd.read_csv("data/food.csv").dropna()
+unique_food = [x.capitalize() for x in food.Name.unique()]
 
 
-st.title("Recommender systems demonstration")
-st.markdown("> A use case on the Food Recommendation dataset")
-st.markdown("dataset link")
+st.write("## IDMC Recommender Systems Project")
+st.write("Ce projet vise à démontrer l'implémentation d'algorithmes de recommandation sur des données de plats.")
 
-user_number = st.slider(
-    'Which user would you like to test the algorithm on ?',
-    1, max_user
-)
+st.image('resources/food_img.jpg', caption='Credit: Unsplash @lvnatikk', width=300)
 
-option = st.selectbox(
-    'Which algorithm would you use ?',
-    ('Item-based', 'User-based'))
+# Tabs
+tab_user_based, tab_content_based = st.tabs(["User-based", "Content-based"])
 
-st.write('You selected:', option)
+with tab_user_based:
+    st.header("User-based recommender system")
+    # small text description
+    st.write("lorem ipsum dolor sit amet.")
+    # select -> choose the user from which we want the recommendations
+    selected_user = st.selectbox(
+        "Sélectionnez l'utilisateur pour lequel vous souhaitez obtenir des recommendations.",
+        unique_users
+    )
 
-if option == "Item-based":
-    recos = get_recommendation_ib()
-elif option == "User-based":
-    recos = get_recommendation_ub()
+    # ! delete this
+    st.write('You selected:', selected_user)
+    # display the recommendations
+    # for rec in get_recommendation_ub(selected_user):
+        # st.write(rec)
 
-for reco in recos:
-    st.write(str(reco))
+
+with tab_content_based:
+    st.header("Content-based recommender system")
+    # small text description
+    st.write("lorem ipsum dolor sit amet.")
+    # select -> choose the user from which we want the recommendations
+    selected_food = st.selectbox(
+        "Sélectionnez le repas pour lequel vous souhaitez obtenir des recommendations.",
+        unique_food
+    )
+
+    # ! delete this
+    st.write('You selected:', selected_food)
+    # display the recommendations
+    st.markdown("### Recommendations suggérées:")
+
+    for i, rec in enumerate(get_recommendation_ib(selected_food)):
+        st.write(f"{i+1}. {rec.capitalize()}")
+
+
+
