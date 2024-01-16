@@ -14,6 +14,7 @@ unique_food = [x.capitalize() for x in food.Name.unique()]
 
 st.write("## IDMC Recommender Systems Project")
 st.write("Ce projet vise à démontrer l'implémentation d'algorithmes de recommandation sur des données de plats.")
+st.markdown("*Julia Crapanzano, Maxime Haurel, Jules Margaritta, Marion Schmitt*")
 
 st.image('resources/food_img.jpg', caption='Credit: Unsplash @lvnatikk', width=300)
 
