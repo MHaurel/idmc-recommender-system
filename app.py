@@ -16,7 +16,7 @@ st.write("## IDMC Recommender Systems Project")
 st.write("Ce projet vise à démontrer l'implémentation d'algorithmes de recommandation sur des données de plats.")
 st.markdown("*Julia Crapanzano, Maxime Haurel, Jules Margaritta, Marion Schmitt*")
 
-st.image('resources/food_img.jpg', caption='Credit: Unsplash @lvnatikk', width=300)
+# st.image('resources/food_img.jpg', caption='Credit: Unsplash @lvnatikk', width=300)
 
 # Tabs
 tab_user_based, tab_content_based = st.tabs(["User-based", "Content-based"])
@@ -32,16 +32,16 @@ with tab_user_based:
     )
 
     # ! delete this
-    st.write('You selected:', selected_user)
+    # st.write('You selected:', selected_user)
     # display the recommendations
-    # for rec in get_recommendation_ub(selected_user):
-        # st.write(rec)
+    for i, rec in enumerate(get_recommendation_ub(selected_user)):
+        st.write(f"{i+1}. {rec.capitalize()}")
 
 
 with tab_content_based:
     st.header("Content-based recommender system")
     # small text description
-    st.write("lorem ipsum dolor sit amet.")
+    st.write("Ce système de recommandation prend en compte les ingrédients de la nourriture, le type (Healthy, Indian, etc.) ainsi que le statut végan.")
     # select -> choose the user from which we want the recommendations
     selected_food = st.selectbox(
         "Sélectionnez le repas pour lequel vous souhaitez obtenir des recommendations.",
@@ -49,7 +49,7 @@ with tab_content_based:
     )
 
     # ! delete this
-    st.write('You selected:', selected_food)
+    # st.write('You selected:', selected_food)
     # display the recommendations
     st.markdown("### Recommendations suggérées:")
 
