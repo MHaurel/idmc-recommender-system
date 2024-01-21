@@ -1,15 +1,10 @@
 import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from surprise import Dataset, Reader
+from surprise import Dataset, Reader, dump
 from surprise.model_selection import train_test_split
-from surprise import SVD, KNNBasic
-from surprise import accuracy
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
 import string
-
-import random
+import os
 
 def text_cleaning(text):
     text = "".join([char for char in text if char not in string.punctuation])
@@ -62,58 +57,25 @@ def get_recommendation_ub(user_ID):
     """
     Returns a list of recommendation user-based.
     """
-    food_data = pd.read_csv('data/food.csv')
-    ratings_data = pd.read_csv('data/ratings.csv')  
+    user_id = int(user_ID.split("°")[-1])
 
+    food_data = pd.read_csv('data/food.csv')
+    ratings_data = pd.read_csv("data/ratings.csv")
+    food_data['Describe'] = food_data['Describe'].apply(text_cleaning)
     merged_data = pd.merge(ratings_data, food_data, on='Food_ID')
 
-    # Define a Reader
-    reader = Reader(rating_scale=(1, 10))
+    _, algo = dump.load(os.path.join('models', 'ub_model.dump'))
 
-    # Create Surprise Dataset
-    data = Dataset.load_from_df(merged_data[['User_ID', 'Food_ID', 'Rating']], reader)
+    def get_user_recommendations(user_id, algo, n=5):
+        predictions = []
+        for item in merged_data['Food_ID'].unique():
+            predictions.append(algo.predict(user_id, item))
+        
+        best_items = sorted([(prediction.iid, prediction.est) for prediction in predictions], key=lambda x: x[1])[::-1][:n]
+        best_items_idx = [x for x, y in best_items]
+        rec_items = food_data.loc[best_items_idx]
+        return rec_items['Name']
 
-    # Train-test split
-    trainset, testset = train_test_split(data, test_size=0.2, random_state=42)
+    recommendations = get_user_recommendations(user_id, algo, n=5).values
 
-    sim_options = {
-        'name': 'cosine',
-        'user_based': True
-    }
-
-    # Build the collaborative filtering model
-    model = KNNBasic(sim_options=sim_options, n_factors=20, n_epochs=5)
-    model.fit(trainset)
-
-
-    food_ids = merged_data['Food_ID'].unique()
-
-    # Get the list of food IDs rated by the user
-    food_ids_user_rated = merged_data[merged_data['User_ID'] == user_ID]['Food_ID'].values
-
-    # Get the list of food IDs not rated by the user
-    food_ids_user_not_rated = [food_id for food_id in food_ids if food_id not in food_ids_user_rated]
-
-    # Create a list of tuples in the format (food_id, user_id, rating) for all food IDs not rated by the user
-    food_ids_user_not_rated = [(food_id, user_ID, 0) for food_id in food_ids_user_not_rated]
-
-    # Predict ratings for all food IDs not rated by the user
-    predictions = model.test(food_ids_user_not_rated)
-
-    # Get top 10 predictions
-    recommendations = []
-    for food_id, user_id, rating, _, _ in predictions:
-        recommendations.append((food_id, rating))
-
-    recommendations.sort(key=lambda x: x[1], reverse=True)
-    recommendations = recommendations[:5]
-
-    # Get food names
-    food_names = []
-    for recommendation in recommendations:
-        food_names.append(food_data[food_data['Food_ID'] == recommendation[0]]['Name'].values[0])
-
-    print("Here are the foods.")
-    print(food_names)
-    return food_names
-    # return food_names
+    return recommendations
